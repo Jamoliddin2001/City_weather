@@ -13,7 +13,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.outlined.KeyboardArrowRight
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.BottomCenter
 import androidx.compose.ui.Alignment.Companion.CenterEnd
@@ -23,8 +23,10 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.imageResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -32,9 +34,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.city_weather.R
+import com.example.city_weather.model.WeatherModel
 import com.example.city_weather.ui_programm.navigation.Screen
+import com.example.city_weather.viewmodel.WeatherViewModel
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.HorizontalPagerIndicator
@@ -43,32 +48,23 @@ import androidx.compose.material.Icon as Icon
 
 @ExperimentalPagerApi
 @Composable
-//@Preview(showBackground = true)
 fun PageWeather(
     navController: NavController,
-) {
-    val scope = rememberCoroutineScope()
-    val items = OnBoardingItem.get()
-    val state = rememberPagerState(pageCount = items.size)
+    viewModel: WeatherViewModel= viewModel()
+){
+    val getAllWeatherData = viewModel.getWeatherData("Dushanbe").data?.observeAsState()
+
+    val state= rememberPagerState(pageCount = 1)
     Column()
     {
-
         HorizontalPager(
             state = state,
             modifier = Modifier
                 .fillMaxSize()
                 .weight(0.7f)
         ) { page ->
-            OnPageWeatherItem(items[page])
+            OnPageWeatherItem(getAllWeatherData?.value)
         }
-
-
-//        BottomSectionofHorizontalPager(size = items.size, index = state.currentPage) {
-//            if (state.currentPage + 1 < items.size)
-//                scope.launch {
-//                    state.scrollToPage(state.currentPage + 1)
-//                }
-//        }
 
     }
     TopSection(navController)
@@ -84,7 +80,6 @@ fun PageWeather(
             inactiveColor = colorResource(android.R.color.darker_gray)
         )
     }
-
 
 }
 
@@ -201,14 +196,14 @@ fun Indicator(isSelected: Boolean) {
 
 @Composable
 fun OnPageWeatherItem(
-    item: OnBoardingItem
+    weatherViewModel: WeatherModel?
 ) {
     Box(
         modifier = Modifier
             .background(
                 brush = Brush.verticalGradient(
                     colors = listOf(
-                        colorResource(item.image),
+                        colorResource(R.color.background_of_city2),
                         colorResource(R.color.background1)
                     )
                 )
@@ -220,7 +215,7 @@ fun OnPageWeatherItem(
             modifier = Modifier
                 .align(TopCenter)
                 .padding(top = 35.dp),
-            text = stringResource(item.title),
+            text = weatherViewModel?.location?.country.toString(),
             fontSize = 24.sp,
             color = Color.White,
             fontWeight = FontWeight.Bold
@@ -233,14 +228,8 @@ fun OnPageWeatherItem(
         verticalArrangement = Arrangement.Center
     ) {
         ChangTextTitile(
-            stringResource(id = item.text)
+            (weatherViewModel?.location?.city.toString())
         )
-//        Text(
-//            text = stringResource(id = item.text),
-//            color = Color.White,
-//            fontSize = 60.sp,
-//            textAlign = TextAlign.Center
-//        )
     }
 
     //Bottom Section
@@ -259,12 +248,12 @@ fun OnPageWeatherItem(
                 items(7) {
                     Column() {
                         Image(
-                            painter = painterResource(item.icon),
+                            bitmap= ImageBitmap.imageResource(R.drawable.iconca1),
                             contentDescription = null,
                             Modifier.size(40.dp)
                         )
                         Text(
-                            text = stringResource(item.text),
+                            text = "OK",
                             color = Color.Black,
                             modifier = Modifier.alpha(0.5f)
                         )

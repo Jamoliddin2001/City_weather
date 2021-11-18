@@ -1,9 +1,11 @@
 package com.example.city_weather
 
 import androidx.compose.runtime.Composable
+import androidx.lifecycle.LiveData
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.example.city_weather.model.WeatherModel
 import com.example.city_weather.ui_programm.navigation.Screen
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.karimsinouh.onBoarding.ui.theme.onBoarding.PageWeather
