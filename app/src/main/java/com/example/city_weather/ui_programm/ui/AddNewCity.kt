@@ -20,18 +20,32 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import com.example.city_weather.ui.theme.Purple200
+import com.example.city_weather.ui_programm.navigation.Screen
+import com.example.city_weather.viewmodel.WeatherViewModel
+import com.google.accompanist.pager.ExperimentalPagerApi
+import com.karimsinouh.onBoarding.ui.theme.onBoarding.ChangTextTitile
+import com.karimsinouh.onBoarding.ui.theme.onBoarding.PageWeather
 
+@ExperimentalPagerApi
 @Composable
 //@Preview(showBackground = true)
 fun Page(navController: NavController) {
     TopSection(navController)
 }
 
+@ExperimentalPagerApi
 @Composable
-fun TopSection(navController: NavController) {
-    var text by remember { mutableStateOf("") }
+fun TopSection(
+    navController: NavController,
+    viewModel: WeatherViewModel = viewModel()
+) {
+
+    val newCity=viewModel.searchCity.value
     Column(
         horizontalAlignment = Alignment.Start,
         modifier = Modifier
@@ -41,34 +55,46 @@ fun TopSection(navController: NavController) {
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(30.dp),
-            value = text,
-            leadingIcon={Icon(Icons.Sharp.Place, contentDescription=null )},
-            onValueChange = { text = it },
+            value = newCity,
+            leadingIcon = { Icon(Icons.Sharp.Place, contentDescription = null) },
+            onValueChange = { viewModel.searchCity.value=it },
             label = { Text(text = "Add your city") },
             shape = RoundedCornerShape(20.dp)
         )
-        Box(
-            modifier = Modifier.clickable { navController.popBackStack() }
-                .background(
-                    brush = Brush.horizontalGradient(
-                        colors = listOf(
-                            colorResource(R.color.background_of_city2),
-                            colorResource(R.color.background1)
+
+        Surface(
+            shape = RoundedCornerShape(10.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .clickable {
+//                        PageWeather(navController = navController,city = newCity)
+                        navController.navigate(Screen.Home.rout)
+                    }
+                    .background(
+                        brush = Brush.horizontalGradient(
+                            colors = listOf(
+                                colorResource(R.color.background_of_city2),
+                                colorResource(R.color.background1)
+                            )
                         )
                     )
+                    .fillMaxWidth()
+                    .size(60.dp)
+                    .padding(10.dp)
+                    .clip(RoundedCornerShape(12.dp)),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "OK",
+                    fontSize = 25.sp,
+                    color = colorResource(R.color.white)
                 )
-                .fillMaxWidth()
-                .size(100.dp)
-                .padding(10.dp)
-                .clip(RoundedCornerShape(12.dp)),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = "OK",
-                fontSize = 25.sp,
-                color = colorResource(R.color.white)
-            )
+            }
         }
+
+
+
     }
 
 }
@@ -77,16 +103,6 @@ fun TopSection(navController: NavController) {
 @Preview
 @Composable
 fun Button() {
-    /*Button(
-        onClick = { },
-        modifier = Modifier
-            .padding(10.dp)
-            .fillMaxWidth()
-            .size(100.dp),
-        colors = ButtonDefaults.buttonColors(
-            backgroundColor = Purple200
-        )
-    ) {*/
     Box(
         modifier = Modifier
             .background(

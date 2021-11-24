@@ -1,5 +1,6 @@
 package com.karimsinouh.onBoarding.ui.theme.onBoarding
 
+import android.annotation.SuppressLint
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.spring
@@ -12,7 +13,7 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.outlined.KeyboardArrowRight
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.BottomCenter
@@ -36,7 +37,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.bumptech.glide.load.engine.Resource
 import com.example.city_weather.R
+import com.example.city_weather.api.Weather
+import com.example.city_weather.model.Forecast
 import com.example.city_weather.model.WeatherModel
 import com.example.city_weather.ui_programm.navigation.Screen
 import com.example.city_weather.viewmodel.WeatherViewModel
@@ -44,41 +48,57 @@ import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.HorizontalPagerIndicator
 import com.google.accompanist.pager.rememberPagerState
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import androidx.compose.material.Icon as Icon
 
 @ExperimentalPagerApi
 @Composable
 fun PageWeather(
     navController: NavController,
-    viewModel: WeatherViewModel= viewModel()
-){
-    val getAllWeatherData = viewModel.getWeatherData("Dushanbe").data?.observeAsState()
+    viewModel: WeatherViewModel = viewModel(),
+    city: String = viewModel.searchCity.value
+) {
+    val getAllWeatherData = viewModel.getWeatherData(city).data?.observeAsState()
+    val weatherState = viewModel.getWeatherData.value
+    val scope = rememberCoroutineScope()
+    val context = LocalContext.current
+    val scaffoldState = rememberScaffoldState()
 
-    val state= rememberPagerState(pageCount = 1)
-    Column()
-    {
-        HorizontalPager(
-            state = state,
-            modifier = Modifier
-                .fillMaxSize()
-                .weight(0.7f)
-        ) { page ->
-            OnPageWeatherItem(getAllWeatherData?.value)
+    val state = rememberPagerState(pageCount = 1)
+
+//    if (weatherState.data != null) {
+        Column {
+            HorizontalPager(
+                state = state,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .weight(0.7f)
+            ) { page ->
+                OnPageWeatherItem(getAllWeatherData?.value)
+            }
         }
 
+        TopSection(navController)
+
+        Box(
+            modifier = Modifier
+                .padding(top = 130.dp)
+                .fillMaxWidth()
+        ) {
+            HorizontalPagerIndicator(
+                pagerState = state,
+                modifier = Modifier.align(TopCenter),
+                activeColor = colorResource(R.color.white),
+                inactiveColor = colorResource(android.R.color.darker_gray)
+            )
+        }
+//    }
+    if (weatherState.isLoading == true) {
+        CircularProgressBar()
     }
-    TopSection(navController)
-    Box(
-        modifier = Modifier
-            .padding(top = 100.dp)
-            .fillMaxWidth()
-    ) {
-        HorizontalPagerIndicator(
-            pagerState = state,
-            modifier = Modifier.align(TopCenter),
-            activeColor = colorResource(R.color.white),
-            inactiveColor = colorResource(android.R.color.darker_gray)
-        )
+    if (!weatherState.error.isNullOrBlank()) {
+        Text(text = weatherState.error)
     }
 
 }
@@ -87,7 +107,6 @@ fun PageWeather(
 fun TopSection(
     navController: NavController
 ) {
-    val context = LocalContext.current
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -194,10 +213,13 @@ fun Indicator(isSelected: Boolean) {
 }
 
 
+@SuppressLint("CoroutineCreationDuringComposition", "UnrememberedMutableState")
 @Composable
 fun OnPageWeatherItem(
-    weatherViewModel: WeatherModel?
+    weatherViewModel: WeatherModel?,
+    viewModel: WeatherViewModel = viewModel()
 ) {
+
     Box(
         modifier = Modifier
             .background(
@@ -215,22 +237,49 @@ fun OnPageWeatherItem(
             modifier = Modifier
                 .align(TopCenter)
                 .padding(top = 35.dp),
-            text = weatherViewModel?.location?.country.toString(),
+            text = "${weatherViewModel?.location?.country}\n ${weatherViewModel?.location?.city}",
             fontSize = 24.sp,
             color = Color.White,
-            fontWeight = FontWeight.Bold
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center
         )
     }
 
-
+    //CenterText
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        ChangTextTitile(
-            (weatherViewModel?.location?.city.toString())
-        )
+        Row(
+            modifier = Modifier.padding(end = 14.dp)
+        ) {
+            Text(
+                text = "${weatherViewModel?.currentObservation?.condition?.temperature}°",
+                color = Color.White,
+                fontSize = 88.sp,
+                textAlign = TextAlign.Center
+            )
+            Column {
+                Text(
+                    text = weatherViewModel?.currentObservation?.condition?.text.toString(),
+                    color = Color.White,
+                    fontSize = 32.sp,
+                    textAlign = TextAlign.Center
+                )
+                Text(
+                    text = "↑ ${weatherViewModel?.forecasts?.get(0)?.high.toString()}°C",
+                    color = Color.White,
+                    fontSize = 22.sp
+                )
+                Text(
+                    text = "↓ ${weatherViewModel?.forecasts?.get(0)?.low.toString()}°C",
+                    color = Color.White,
+                    fontSize = 22.sp
+                )
+            }
+        }
     }
+
 
     //Bottom Section
     Box(
@@ -245,20 +294,11 @@ fun OnPageWeatherItem(
                     .padding(10.dp),
                 horizontalArrangement = Arrangement.spacedBy(30.dp)
             ) {
-                items(7) {
-                    Column() {
-                        Image(
-                            bitmap= ImageBitmap.imageResource(R.drawable.iconca1),
-                            contentDescription = null,
-                            Modifier.size(40.dp)
-                        )
-                        Text(
-                            text = "OK",
-                            color = Color.Black,
-                            modifier = Modifier.alpha(0.5f)
-                        )
+                weatherViewModel?.forecasts?.size?.let {
+                    items(it) { index ->
+                        if(index==0)weatherViewModel.forecasts[0].day="Today"
+                        WeatherListItem(forecast = weatherViewModel.forecasts[index])
                     }
-
                 }
             }
         }
@@ -267,7 +307,7 @@ fun OnPageWeatherItem(
 
 }
 
-@Preview
+
 @Composable
 fun CircularProgressBar() {
     Column(
@@ -291,4 +331,31 @@ fun ChangTextTitile(
         textAlign = TextAlign.Center
     )
 
+}
+
+
+@Composable
+fun WeatherListItem(
+    forecast: Forecast,
+    viewModel: WeatherViewModel = viewModel()
+) {
+    Column(
+        modifier = Modifier.padding(10.dp)
+    ) {
+        Text(
+            text = forecast.high.toString() + "°",
+            color = Color.Black,
+            modifier = Modifier.alpha(0.9f)
+        )
+        Image(
+            bitmap = ImageBitmap.imageResource(Weather.getWeatherText(forecast.text)),
+            contentDescription = "Text",
+            Modifier.size(40.dp)
+        )
+        Text(
+            text = forecast.day,
+            color = Color.Black,
+            modifier = Modifier.alpha(0.5f)
+        )
+    }
 }

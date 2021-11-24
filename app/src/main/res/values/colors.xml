@@ -11,4 +11,5 @@
     <color name="background_of_city1">#7187DC</color>
     <color name="background_of_city2">#7E9EE9</color>
     <color name="background1">#CA92CC</color>
+    <color name="progress">#222121</color>
 </resources>

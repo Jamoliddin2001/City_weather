@@ -21,7 +21,6 @@ import io.reactivex.disposables.CompositeDisposable
 class MainActivity : ComponentActivity() {
 
     lateinit var navCotroller: NavHostController
-    private val compositeDisposable = CompositeDisposable()
 
     @ExperimentalPagerApi
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -33,9 +32,5 @@ class MainActivity : ComponentActivity() {
                 SetupNavGraph(navController = navCotroller)
             }
         }
-    }
-    override fun onDestroy() {
-        super.onDestroy()
-        compositeDisposable.dispose()
     }
 }

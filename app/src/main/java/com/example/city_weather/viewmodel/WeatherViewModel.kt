@@ -1,30 +1,51 @@
 package com.example.city_weather.viewmodel
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
+import android.util.Log
+import androidx.compose.runtime.*
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.city_weather.api.Weather
+import com.example.city_weather.model.Astronomy
 import com.example.city_weather.model.WeatherModel
 import com.example.city_weather.utils.Resource
+import com.example.city_weather.utils.UiState
 
-class WeatherViewModel :ViewModel(){
+class WeatherViewModel() : ViewModel() {
 
-    private var isLoading: Boolean by mutableStateOf(false)
+    var searchCity = mutableStateOf("Dushanbe")
 
-    private val weather=Weather
-    private val getWeatherData=MutableLiveData<WeatherModel>()
+    private val weather = Weather
+    private val _getWeatherData = mutableStateOf(UiState<WeatherModel>())
+    val getWeatherData: State<UiState<WeatherModel>> = _getWeatherData
 
-    fun getWeatherData(city:String):Resource<LiveData<WeatherModel>>{
-        val result=weather.getWeathersData(city)
+//    init {
+//        getWeatherData(searchCity.value)
+//    }
 
-        if(result is Resource.Success){
-            isLoading = true
-            getWeatherData.value= result.data?.value
+    fun getWeatherData(city: String): Resource<LiveData<WeatherModel>> {
+        val result = weather.getWeathersData(city)
+        when (result) {
+            is Resource.Loading -> {
+
+//                UiState<WeatherModel>(isLoading = true)
+                Log.d("TAG", "getWeatherData: WorkedLoading")
+            }
+            is Resource.Success -> {
+                _getWeatherData.value = UiState(data = result.data?.value)
+                Log.d("TAG", "getWeatherData: WorkedSuccess")
+            }
+            is Resource.Error -> {
+                UiState<WeatherModel>(
+                    error = result.message
+                )
+                Log.d("TAG", "getWeatherData: WorkedError")
+            }
         }
 
         return result
+
     }
+
 }

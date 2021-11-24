@@ -9,7 +9,7 @@ data class Forecast(
     @SerializedName("date")
     val date: Int,
     @SerializedName("day")
-    val day: String,
+    var day: String,
     @SerializedName("high")
     val high: Int,
     @SerializedName("low")
