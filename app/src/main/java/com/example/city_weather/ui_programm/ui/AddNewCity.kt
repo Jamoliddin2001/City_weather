@@ -28,7 +28,6 @@ import com.example.city_weather.ui.theme.Purple200
 import com.example.city_weather.ui_programm.navigation.Screen
 import com.example.city_weather.viewmodel.WeatherViewModel
 import com.google.accompanist.pager.ExperimentalPagerApi
-import com.karimsinouh.onBoarding.ui.theme.onBoarding.ChangTextTitile
 import com.karimsinouh.onBoarding.ui.theme.onBoarding.PageWeather
 
 @ExperimentalPagerApi

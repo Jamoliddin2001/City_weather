@@ -1,6 +1,7 @@
 package com.karimsinouh.onBoarding.ui.theme.onBoarding
 
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.spring
@@ -17,11 +18,13 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.BottomCenter
+import androidx.compose.ui.Alignment.Companion.Center
 import androidx.compose.ui.Alignment.Companion.CenterEnd
 import androidx.compose.ui.Alignment.Companion.TopCenter
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
@@ -59,15 +62,22 @@ fun PageWeather(
     viewModel: WeatherViewModel = viewModel(),
     city: String = viewModel.searchCity.value
 ) {
-    val getAllWeatherData = viewModel.getWeatherData(city).data?.observeAsState()
+    val getAllWeatherData = viewModel.getWeatherData(city)?.data?.observeAsState()
     val weatherState = viewModel.getWeatherData.value
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
     val scaffoldState = rememberScaffoldState()
+    val isloading = Weather.loading.value
+
 
     val state = rememberPagerState(pageCount = 1)
 
-//    if (weatherState.data != null) {
+
+    if (isloading) {
+        CircularProgressBar()
+        TopSection(navController)
+    }
+    if (!isloading) {
         Column {
             HorizontalPager(
                 state = state,
@@ -78,9 +88,7 @@ fun PageWeather(
                 OnPageWeatherItem(getAllWeatherData?.value)
             }
         }
-
         TopSection(navController)
-
         Box(
             modifier = Modifier
                 .padding(top = 130.dp)
@@ -93,6 +101,7 @@ fun PageWeather(
                 inactiveColor = colorResource(android.R.color.darker_gray)
             )
         }
+    }
 //    }
     if (weatherState.isLoading == true) {
         CircularProgressBar()
@@ -296,7 +305,7 @@ fun OnPageWeatherItem(
             ) {
                 weatherViewModel?.forecasts?.size?.let {
                     items(it) { index ->
-                        if(index==0)weatherViewModel.forecasts[0].day="Today"
+                        if (index == 0) weatherViewModel.forecasts[0].day = "Today"
                         WeatherListItem(forecast = weatherViewModel.forecasts[index])
                     }
                 }
@@ -311,26 +320,23 @@ fun OnPageWeatherItem(
 @Composable
 fun CircularProgressBar() {
     Column(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .background(
+                brush = Brush.verticalGradient(
+                    colors = listOf(
+                        colorResource(R.color.background_of_city2),
+                        colorResource(R.color.background1)
+                    )
+                )
+            ),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        CircularProgressIndicator()
+        CircularProgressIndicator(
+            color = Color.White
+        )
     }
-}
-
-@Preview(showBackground = true, widthDp = 360, heightDp = 640)
-@Composable
-fun ChangTextTitile(
-    title: String = "Alimuhammad"
-) {
-    Text(
-        text = title,
-        color = Color.White,
-        fontSize = 60.sp,
-        textAlign = TextAlign.Center
-    )
-
 }
 
 
@@ -342,20 +348,37 @@ fun WeatherListItem(
     Column(
         modifier = Modifier.padding(10.dp)
     ) {
-        Text(
-            text = forecast.high.toString() + "°",
-            color = Color.Black,
-            modifier = Modifier.alpha(0.9f)
-        )
-        Image(
-            bitmap = ImageBitmap.imageResource(Weather.getWeatherText(forecast.text)),
-            contentDescription = "Text",
-            Modifier.size(40.dp)
-        )
+
         Text(
             text = forecast.day,
             color = Color.Black,
-            modifier = Modifier.alpha(0.5f)
+            modifier = Modifier
+                .alpha(0.6f)
+                .align(Alignment.CenterHorizontally)
         )
+
+        Image(
+            bitmap = ImageBitmap.imageResource(Weather.getWeatherText(forecast.text)),
+            contentDescription = "Text",
+            Modifier
+                .size(50.dp)
+                .align(Alignment.CenterHorizontally)
+        )
+        Row(
+            modifier = Modifier
+                .padding(8.dp)
+                .align(Alignment.CenterHorizontally)
+        ) {
+            Text(
+                text = forecast.high.toString() + "°  ",
+                color = Color.Black,
+                modifier = Modifier.alpha(0.9f)
+            )
+            Text(
+                text = forecast.low.toString() + "°",
+                color = Color.Black,
+                modifier = Modifier.alpha(0.5f)
+            )
+        }
     }
 }
