@@ -76,6 +76,7 @@ fun PageWeather(
     if (isloading) {
         CircularProgressBar()
         TopSection(navController)
+
     }
     if (!isloading) {
         Column {
@@ -329,12 +330,19 @@ fun CircularProgressBar() {
                         colorResource(R.color.background1)
                     )
                 )
-            ),
+            )
+            .padding(10.dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         CircularProgressIndicator(
             color = Color.White
+        )
+
+        Text(
+            text = "Loading...",
+            color = Color.White,
+            fontSize = 26.sp
         )
     }
 }
