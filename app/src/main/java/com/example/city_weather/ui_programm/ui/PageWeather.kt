@@ -1,6 +1,7 @@
-package com.karimsinouh.onBoarding.ui.theme.onBoarding
+package com.example.city_weather.ui_programm.ui
 
 import android.annotation.SuppressLint
+import android.app.Application
 import android.util.Log
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateDpAsState
@@ -14,17 +15,16 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.outlined.KeyboardArrowRight
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.BottomCenter
-import androidx.compose.ui.Alignment.Companion.Center
 import androidx.compose.ui.Alignment.Companion.CenterEnd
 import androidx.compose.ui.Alignment.Companion.TopCenter
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
@@ -40,20 +40,20 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.bumptech.glide.load.engine.Resource
 import com.example.city_weather.R
 import com.example.city_weather.api.Weather
 import com.example.city_weather.model.Forecast
 import com.example.city_weather.model.WeatherModel
+import com.example.city_weather.roomdatabase.entity.CityEntity
 import com.example.city_weather.ui_programm.navigation.Screen
+import com.example.city_weather.viewmodel.CityViewModel
+import com.example.city_weather.viewmodel.CityViewModelFactory
 import com.example.city_weather.viewmodel.WeatherViewModel
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.HorizontalPagerIndicator
 import com.google.accompanist.pager.rememberPagerState
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import androidx.compose.material.Icon as Icon
+import com.karimsinouh.onBoarding.ui.theme.onBoarding.OnBoardingItem
 
 @ExperimentalPagerApi
 @Composable
@@ -62,16 +62,16 @@ fun PageWeather(
     viewModel: WeatherViewModel = viewModel(),
     city: String = viewModel.searchCity.value
 ) {
-    val getAllWeatherData = viewModel.getWeatherData(city)?.data?.observeAsState()
-    val weatherState = viewModel.getWeatherData.value
-    val scope = rememberCoroutineScope()
+    //val getAllWeatherData = viewModel.getWeatherData(city).data?.observeAsState()
     val context = LocalContext.current
-    val scaffoldState = rememberScaffoldState()
     val isloading = Weather.loading.value
+    val cityModel: CityViewModel = viewModel(
+        factory = CityViewModelFactory(context.applicationContext as Application)
+    )
+    val listOfCity: List<CityEntity> = cityModel.readAllCity.observeAsState(listOf()).value
 
-
-    val state = rememberPagerState(pageCount = 1)
-
+    val state = rememberPagerState(pageCount = listOfCity.size)
+    val getCityWeather = viewModel.getWeatherData(listOfCity[0].city).data?.observeAsState()
 
     if (isloading) {
         CircularProgressBar()
@@ -79,6 +79,7 @@ fun PageWeather(
 
     }
     if (!isloading) {
+
         Column {
             HorizontalPager(
                 state = state,
@@ -86,6 +87,9 @@ fun PageWeather(
                     .fillMaxSize()
                     .weight(0.7f)
             ) { page ->
+                //Log.d("TAG", "PageWeather->page: ${page}")
+                val getAllWeatherData = viewModel.getWeatherData(listOfCity[page].city).data?.observeAsState()
+                //Log.d("TAG", "PageWeather: CityData: ${listOfCity[page].city}")
                 OnPageWeatherItem(getAllWeatherData?.value)
             }
         }
@@ -102,13 +106,6 @@ fun PageWeather(
                 inactiveColor = colorResource(android.R.color.darker_gray)
             )
         }
-    }
-//    }
-    if (weatherState.isLoading == true) {
-        CircularProgressBar()
-    }
-    if (!weatherState.error.isNullOrBlank()) {
-        Text(text = weatherState.error)
     }
 
 }
@@ -338,7 +335,6 @@ fun CircularProgressBar() {
         CircularProgressIndicator(
             color = Color.White
         )
-
         Text(
             text = "Loading...",
             color = Color.White,

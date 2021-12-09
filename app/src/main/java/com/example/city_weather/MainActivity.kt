@@ -8,6 +8,8 @@ import androidx.activity.compose.setContent
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.example.city_weather.ui.theme.City_weatherTheme
+import com.example.city_weather.ui_programm.navigation.SetupNavGraph
+import com.example.city_weather.viewmodel.CityViewModel
 import com.google.accompanist.pager.ExperimentalPagerApi
 
 class MainActivity : ComponentActivity() {
@@ -15,6 +17,8 @@ class MainActivity : ComponentActivity() {
     private lateinit var navCotroller: NavHostController
     private lateinit var preferences:SharedPreferences
     private var isFirst :String? = null
+
+    private lateinit var viewModel: CityViewModel
 
     @ExperimentalPagerApi
     override fun onCreate(savedInstanceState: Bundle?) {

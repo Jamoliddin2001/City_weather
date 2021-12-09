@@ -19,7 +19,7 @@ interface WeatherAPI {
         @Query(QUERY_PARAM_U) u: String = "c"   ,
 
         @Header("x-rapidapi-host") value1:String="yahoo-weather5.p.rapidapi.com",
-        @Header("x-rapidapi-key") value2: String = "eb1df13b9bmsh8dbe38b1911a0e2p140ba8jsnfd45a3f6dbe6"
+        @Header("x-rapidapi-key") value2: String = "5399f2a2c5mshc40d4d3ddd4c5adp13c858jsn0058a4b2fb8c"
     ) : Call<WeatherModel>
 
     companion object{

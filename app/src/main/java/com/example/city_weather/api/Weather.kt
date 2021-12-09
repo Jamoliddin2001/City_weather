@@ -1,14 +1,12 @@
 package com.example.city_weather.api
 
 import android.util.Log
-import android.widget.ProgressBar
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.example.city_weather.R
 import com.example.city_weather.model.WeatherModel
 import com.example.city_weather.utils.Resource
-import com.karimsinouh.onBoarding.ui.theme.onBoarding.CircularProgressBar
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response

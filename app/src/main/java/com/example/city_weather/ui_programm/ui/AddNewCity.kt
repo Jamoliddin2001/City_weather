@@ -1,6 +1,6 @@
-package com.example.city_weather
+package com.example.city_weather.ui_programm.ui
 
-import android.graphics.Color
+import android.app.Application
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -13,38 +13,40 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color.Companion.Black
-import androidx.compose.ui.graphics.Color.Companion.Transparent
-import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
-import com.example.city_weather.ui.theme.Purple200
+import com.example.city_weather.R
+import com.example.city_weather.roomdatabase.entity.CityEntity
 import com.example.city_weather.ui_programm.navigation.Screen
+import com.example.city_weather.viewmodel.CityViewModel
+import com.example.city_weather.viewmodel.CityViewModelFactory
 import com.example.city_weather.viewmodel.WeatherViewModel
 import com.google.accompanist.pager.ExperimentalPagerApi
-import com.karimsinouh.onBoarding.ui.theme.onBoarding.PageWeather
 
 @ExperimentalPagerApi
 @Composable
 //@Preview(showBackground = true)
 fun Page(navController: NavController) {
-    TopSection(navController)
+    TopSection1(navController)
 }
 
 @ExperimentalPagerApi
 @Composable
-fun TopSection(
+fun TopSection1(
     navController: NavController,
     viewModel: WeatherViewModel = viewModel()
 ) {
 
-    val newCity=viewModel.searchCity.value
+    val context = LocalContext.current
+    val cityModel: CityViewModel = viewModel(
+        factory = CityViewModelFactory(context.applicationContext as Application)
+    )
+    val newCity = viewModel.searchCity.value
     Column(
         horizontalAlignment = Alignment.Start,
         modifier = Modifier
@@ -56,7 +58,9 @@ fun TopSection(
                 .padding(30.dp),
             value = newCity,
             leadingIcon = { Icon(Icons.Sharp.Place, contentDescription = null) },
-            onValueChange = { viewModel.searchCity.value=it },
+            onValueChange = {
+                viewModel.searchCity.value = it
+            },
             label = { Text(text = "Add your city") },
             shape = RoundedCornerShape(20.dp)
         )
@@ -67,7 +71,9 @@ fun TopSection(
             Box(
                 modifier = Modifier
                     .clickable {
-//                        PageWeather(navController = navController,city = newCity)
+                        if(newCity.trim()!="") {
+                            cityModel.addCity(CityEntity(city = newCity.trim()))
+                        }
                         navController.navigate(Screen.Home.rout)
                     }
                     .background(
@@ -91,7 +97,6 @@ fun TopSection(
                 )
             }
         }
-
 
 
     }
@@ -124,6 +129,4 @@ fun Button() {
             color = colorResource(R.color.white)
         )
     }
-
-
 }
