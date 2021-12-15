@@ -59,10 +59,8 @@ import com.karimsinouh.onBoarding.ui.theme.onBoarding.OnBoardingItem
 @Composable
 fun PageWeather(
     navController: NavController,
-    viewModel: WeatherViewModel = viewModel(),
-    city: String = viewModel.searchCity.value
+    viewModel: WeatherViewModel = viewModel()
 ) {
-    //val getAllWeatherData = viewModel.getWeatherData(city).data?.observeAsState()
     val context = LocalContext.current
     val isloading = Weather.loading.value
     val cityModel: CityViewModel = viewModel(
@@ -71,40 +69,45 @@ fun PageWeather(
     val listOfCity: List<CityEntity> = cityModel.readAllCity.observeAsState(listOf()).value
 
     val state = rememberPagerState(pageCount = listOfCity.size)
-    val getCityWeather = viewModel.getWeatherData(listOfCity[0].city).data?.observeAsState()
 
-    if (isloading) {
+    if (listOfCity.isEmpty()) {
         CircularProgressBar()
         TopSection(navController)
-
     }
-    if (!isloading) {
-
-        Column {
-            HorizontalPager(
-                state = state,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .weight(0.7f)
-            ) { page ->
-                //Log.d("TAG", "PageWeather->page: ${page}")
-                val getAllWeatherData = viewModel.getWeatherData(listOfCity[page].city).data?.observeAsState()
-                //Log.d("TAG", "PageWeather: CityData: ${listOfCity[page].city}")
-                OnPageWeatherItem(getAllWeatherData?.value)
+    else {
+        var getAllWeatherData =
+            viewModel.getWeatherData(listOfCity[0].city).data?.observeAsState()
+        if (isloading) {
+            CircularProgressBar()
+            TopSection(navController)
+        } else {
+            Column {
+                HorizontalPager(
+                    state = state,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .weight(0.7f)
+                ) { page ->
+                    if (page != 0) {
+                        getAllWeatherData =
+                            viewModel.getWeatherData(listOfCity[page].city).data?.observeAsState()
+                    }
+                    OnPageWeatherItem(getAllWeatherData?.value)
+                }
             }
-        }
-        TopSection(navController)
-        Box(
-            modifier = Modifier
-                .padding(top = 130.dp)
-                .fillMaxWidth()
-        ) {
-            HorizontalPagerIndicator(
-                pagerState = state,
-                modifier = Modifier.align(TopCenter),
-                activeColor = colorResource(R.color.white),
-                inactiveColor = colorResource(android.R.color.darker_gray)
-            )
+            TopSection(navController)
+            Box(
+                modifier = Modifier
+                    .padding(top = 130.dp)
+                    .fillMaxWidth()
+            ) {
+                HorizontalPagerIndicator(
+                    pagerState = state,
+                    modifier = Modifier.align(TopCenter),
+                    activeColor = colorResource(R.color.white),
+                    inactiveColor = colorResource(android.R.color.darker_gray)
+                )
+            }
         }
     }
 
